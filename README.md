@@ -149,3 +149,34 @@ docker compose up -d --build
 <img src='images/RemoteDevelopment_AttachNewWindow.png'>
 
 <br>
+
+## AWS CLI 設定
+1. [コンテナ環境へのアクセス](#コンテナ環境へのアクセス)を実施し、Docker環境へアクセスする。
+
+2. [~/.aws/aws_cli_credentials_manager.sh](./kubernetes/aws_cli_credentials_manager.sh)内のREPLACE_MEの箇所を置換する。
+
+```bash
+[default]
+aws_access_key_id = REPLACE_ME
+aws_secret_access_key = REPLACE_ME
+region = REPLACE_ME
+```
+
+3. 下記コマンドを実行し設定する。
+
+```bash
+cd ~/.aws
+./aws_cli_credentials_manager.sh
+```
+
+4. `~/.aws/credentials`に設定が反映されていることを確認する。
+
+<br>
+
+> [!NOTE]
+> `aws_cli_credentials_manager.sh`を使用することで、`~/.aws/credentials`の設定一括管理が可能となる。<br>
+> `~/.aws/credentials`はコメントアウトにより、設定を無効化する事が出来ない。<br>
+> 一方で、[~/.aws/aws_cli_credentials_manager.sh](./kubernetes/aws_cli_credentials_manager.sh)は設定をコメントアウトし、ShellScriptを実行することで、設定の無効化が可能である。<br>
+> `aws_cli_credentials_manager.sh`による設定管理をする場合は、AWS公式より提供されている[aws configure](https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/cli-configure-files.html#cli-configure-files-methods)コマンドの実行は不要となる。
+
+<br>
