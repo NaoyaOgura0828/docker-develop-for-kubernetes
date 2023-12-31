@@ -13,8 +13,6 @@ services:
         - KUBECTL_VERSION=${KUBECTL_VERSION}
     volumes:
       - home:/home
-      - /etc/passwd:/etc/passwd:ro # Valid only if the host OS is Linux
-      - /etc/group:/etc/group:ro # Valid only if the host OS is Linux
     user: ${USER_NAME}
     stdin_open: true
     tty: true
