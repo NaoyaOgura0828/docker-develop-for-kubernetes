@@ -8,7 +8,7 @@ ARG USER_NAME=${USER_NAME}
 ARG KUBECTL_VERSION=${KUBECTL_VERSION}
 
 # Set TimeZone
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
 # Repository Update
 RUN dnf update -y
