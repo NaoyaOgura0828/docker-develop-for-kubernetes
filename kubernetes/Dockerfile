@@ -1,6 +1,6 @@
 # Set the base image
 ARG DOCKER_IMAGE_TAG=${DOCKER_IMAGE_TAG}
-FROM rockylinux:${DOCKER_IMAGE_TAG}
+FROM ubuntu:${DOCKER_IMAGE_TAG}
 
 # Set ARG
 ARG TZ=Asia/Tokyo
@@ -11,12 +11,20 @@ ARG KUBECTL_VERSION=${KUBECTL_VERSION}
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
 # Repository Update
-RUN dnf update -y
+RUN apt-get update -y &&\
+    apt-get upgrade -y
 
 # Install Packages
-RUN dnf install sudo -y &&\
-    dnf install git -y &&\
-    dnf install unzip -y
+RUN apt-get install apt-transport-https -y &&\
+    apt-get install curl -y &&\
+    apt-get install git -y &&\
+    apt-get install gnupg2 -y &&\
+    apt-get install software-properties-common -y &&\
+    apt-get install sudo -y &&\
+    apt-get install unzip -y &&\
+    apt-get install vim -y &&\
+    apt-get install wget -y &&\
+    apt-get install zip -y
 
 # Install awscliv2
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" &&\
@@ -25,7 +33,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     rm awscliv2.zip
 
 # Add User
-RUN adduser ${USER_NAME} --badname
+RUN adduser ${USER_NAME} --force-badname
 
 # Setup to use sudo without password
 RUN echo "${USER_NAME} ALL=NOPASSWD: ALL" >> /etc/sudoers
@@ -36,16 +44,21 @@ WORKDIR /home/${USER_NAME}
 # Change User
 USER ${USER_NAME}
 
-# Setup alias
-COPY ./.alias /home/${USER_NAME}/
-RUN cat ~/.alias >> ~/.bashrc &&\
-    rm .alias
-
 # Install kubectl
-COPY ./kubectl_installer.sh /home/${USER_NAME}/
-RUN sudo chmod 777 ~/kubectl_installer.sh &&\
-    ./kubectl_installer.sh &&\
-    rm kubectl_installer.sh
+RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - &&\
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list &&\
+    sudo apt-get update &&\
+    sudo apt-get install kubectl -y
+
+# Install helm
+RUN curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null &&\
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list &&\
+    sudo apt-get update &&\
+    sudo apt-get install helm
+
+# Install eksctl
+RUN curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp &&\
+    sudo mv /tmp/eksctl /usr/local/bin
 
 # Create .aws files
 RUN mkdir ~/.aws &&\
